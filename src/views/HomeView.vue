@@ -1,9 +1,15 @@
+<template>
+  <div class="home-view">
+    <UploadForm />
+  </div>
+</template>
+
 <script setup lang="ts">
-import TheWelcome from '../components/TheWelcome.vue'
+import UploadForm from '../components/UploadForm.vue'
 </script>
 
-<template>
-  <main>
-    <TheWelcome />
-  </main>
-</template>
+<style scoped lang="scss">
+.home-view {
+  padding: 20px;
+}
+</style>
