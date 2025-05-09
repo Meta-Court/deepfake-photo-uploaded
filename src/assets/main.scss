@@ -1,8 +1,18 @@
 @import 'common';
-@import 'uploadForm';
+
+@import './components/ImagePreview';
+@import './components/UploadForm';
+
+@import './views/HomeView';
 
 body {
   margin: 0;
+  padding: 0;
   font-family: 'Arial', sans-serif;
-  background: #f8f8f8;
+  background-color: $background-color;
+  color: $text-color;
+}
+
+* {
+  box-sizing: border-box;
 }

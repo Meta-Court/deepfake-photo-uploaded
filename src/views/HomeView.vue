@@ -1,5 +1,6 @@
 <template>
   <div class="home-view">
+    <h1 class="title">AI 深度偽造照片上傳</h1>
     <UploadForm />
   </div>
 </template>
@@ -8,8 +9,4 @@
 import UploadForm from '../components/UploadForm.vue'
 </script>
 
-<style scoped lang="scss">
-.home-view {
-  padding: 20px;
-}
-</style>
+<style scoped lang="scss"></style>

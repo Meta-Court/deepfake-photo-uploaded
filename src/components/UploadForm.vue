@@ -1,57 +1,71 @@
 <template>
-  <div class="upload-form">
-    <h2>上傳照片</h2>
-    <!-- The form posts directly to the server's /upload endpoint -->
-    <form action="/upload" method="post" enctype="multipart/form-data">
-      <div class="form-field">
-        <label for="email">電子郵件:</label>
-        <input type="email" id="email" name="email" v-model="email" required />
-      </div>
-      <div class="form-field">
-        <label for="nickname">昵稱:</label>
-        <input type="text" id="nickname" name="nickname" v-model="nickname" required />
-      </div>
-      <div class="form-field">
-        <label for="photo">照片:</label>
-        <input
-          type="file"
-          id="photo"
-          name="photo"
-          accept="image/*"
-          @change="onFileChange"
-          required
-        />
-      </div>
-      <!-- Display a preview of the selected image -->
-      <div class="preview" v-if="previewUrl">
-        <p>預覽:</p>
-        <img :src="previewUrl" alt="圖片預覽" />
-      </div>
-      <button type="submit">上傳照片</button>
-    </form>
-  </div>
+  <form @submit.prevent="handleSubmit" class="upload-form">
+    <div class="form-group">
+      <label for="email">電子郵件</label>
+      <input type="email" id="email" v-model="email" required />
+    </div>
+    <div class="form-group">
+      <label for="nickname">暱稱</label>
+      <input type="text" id="nickname" v-model="nickname" required />
+    </div>
+    <div class="form-group">
+      <label for="photo">選擇照片</label>
+      <input type="file" id="photo" @change="handleFileChange" accept="image/*" required />
+    </div>
+    <div v-if="previewUrl">
+      <ImagePreview :src="previewUrl" />
+    </div>
+    <button type="submit" class="upload-button">上傳照片</button>
+  </form>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import ImagePreview from './ImagePreview.vue'
 
-const email = ref<string>('')
-const nickname = ref<string>('')
-const previewUrl = ref<string>('')
+const email = ref('')
+const nickname = ref('')
+const selectedFile = ref<File | null>(null)
+const previewUrl = ref('')
 
-function onFileChange(event: Event): void {
-  const input = event.target as HTMLInputElement
-  if (input.files && input.files[0]) {
-    const file = input.files[0]
-    const reader = new FileReader()
-    reader.onload = (e: ProgressEvent<FileReader>) => {
-      if (e.target?.result) {
-        previewUrl.value = e.target.result as string
-      }
+function handleFileChange(event: Event) {
+  const target = event.target as HTMLInputElement
+  if (target.files && target.files[0]) {
+    selectedFile.value = target.files[0]
+    previewUrl.value = URL.createObjectURL(selectedFile.value)
+  }
+}
+
+async function handleSubmit() {
+  if (!selectedFile.value) {
+    alert('請選擇一張照片')
+    return
+  }
+  const formData = new FormData()
+  formData.append('email', email.value)
+  formData.append('nickname', nickname.value)
+  formData.append('photo', selectedFile.value)
+
+  try {
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    })
+    const result = await response.json()
+    if (response.ok) {
+      alert('上傳成功！請查收您的電子郵件。')
+      // Reset form
+      email.value = ''
+      nickname.value = ''
+      selectedFile.value = null
+      previewUrl.value = ''
+    } else {
+      alert(`上傳失敗：${result.error}`)
     }
-    reader.readAsDataURL(file)
+  } catch {
+    alert('上傳時發生錯誤。')
   }
 }
 </script>
 
-<style scoped></style>
+<style scoped lang="scss"></style>
