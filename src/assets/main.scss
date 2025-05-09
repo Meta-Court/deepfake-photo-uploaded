@@ -1,16 +1,12 @@
 @import 'common';
-
-@import './components/ImagePreview';
-@import './components/UploadForm';
-
+@import './components/uploadForm';
 @import './views/HomeView';
 
 body {
   margin: 0;
   padding: 0;
   font-family: 'Arial', sans-serif;
-  background-color: $background-color;
-  color: $text-color;
+  background: #f5f5f5;
 }
 
 * {

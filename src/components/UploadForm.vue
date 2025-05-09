@@ -1,44 +1,51 @@
 <template>
-  <form @submit.prevent="handleSubmit" class="upload-form">
+  <div class="upload-form">
     <div class="form-group">
       <label for="email">電子郵件</label>
-      <input type="email" id="email" v-model="email" required />
+      <input id="email" type="email" v-model="email" placeholder="請輸入您的電子郵件" />
     </div>
     <div class="form-group">
       <label for="nickname">暱稱</label>
-      <input type="text" id="nickname" v-model="nickname" required />
+      <input id="nickname" type="text" v-model="nickname" placeholder="請輸入您的暱稱" />
     </div>
     <div class="form-group">
       <label for="photo">選擇照片</label>
-      <input type="file" id="photo" @change="handleFileChange" accept="image/*" required />
+      <input id="photo" type="file" accept="image/*" @change="onFileChange" />
     </div>
-    <div v-if="previewUrl">
-      <ImagePreview :src="previewUrl" />
+    <!-- Only show preview if a photo is selected -->
+    <div class="preview" v-if="previewUrl">
+      <p>照片預覽：</p>
+      <img :src="previewUrl" alt="照片預覽" />
     </div>
-    <button type="submit" class="upload-button">上傳照片</button>
-  </form>
+    <button @click="onSubmit">上傳照片</button>
+  </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import { ref } from 'vue'
-import ImagePreview from './ImagePreview.vue'
 
 const email = ref('')
 const nickname = ref('')
 const selectedFile = ref<File | null>(null)
-const previewUrl = ref('')
+const previewUrl = ref<string>('')
 
-function handleFileChange(event: Event) {
+// Triggered on file selection to set a preview
+function onFileChange(event: Event) {
   const target = event.target as HTMLInputElement
   if (target.files && target.files[0]) {
     selectedFile.value = target.files[0]
-    previewUrl.value = URL.createObjectURL(selectedFile.value)
+    const reader = new FileReader()
+    reader.readAsDataURL(selectedFile.value)
+    reader.onload = () => {
+      previewUrl.value = String(reader.result)
+    }
   }
 }
 
-async function handleSubmit() {
-  if (!selectedFile.value) {
-    alert('請選擇一張照片')
+// Submit the form only upon button click
+async function onSubmit() {
+  if (!email.value || !nickname.value || !selectedFile.value) {
+    alert('請完整填寫所有欄位')
     return
   }
   const formData = new FormData()
@@ -46,24 +53,15 @@ async function handleSubmit() {
   formData.append('nickname', nickname.value)
   formData.append('photo', selectedFile.value)
 
-  try {
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
-    })
-    const result = await response.json()
-    if (response.ok) {
-      alert('上傳成功！請查收您的電子郵件。')
-      // Reset form
-      email.value = ''
-      nickname.value = ''
-      selectedFile.value = null
-      previewUrl.value = ''
-    } else {
-      alert(`上傳失敗：${result.error}`)
-    }
-  } catch {
-    alert('上傳時發生錯誤。')
+  // Sends the form data to our backend endpoint
+  const response = await fetch('/api/upload', {
+    method: 'POST',
+    body: formData,
+  })
+  if (response.ok) {
+    alert('上傳成功')
+  } else {
+    alert('上傳失敗')
   }
 }
 </script>
